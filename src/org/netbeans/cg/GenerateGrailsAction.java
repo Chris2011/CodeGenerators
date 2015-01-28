@@ -44,6 +44,7 @@ public final class GenerateGrailsAction implements ActionListener {
     private static final String grailsProjectFolder = "C:\\test1";
     private static final String grailsProjectName = "demo";
     private static final String grailsProjectCommand = "create-app";
+    private Process process;
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -63,11 +64,12 @@ public final class GenerateGrailsAction implements ActionListener {
             Callable<Process> callable = new Callable<Process>() {
                 @Override
                 public Process call() throws Exception {
-                    return new ExternalProcessBuilder(grails).
+                    process = new ExternalProcessBuilder(grails).
                             addArgument(grailsProjectCommand).
                             addArgument(grailsProjectName).
                             addArgument("--non-interactive").
                             workingDirectory(new File(grailsProjectFolder)).call();
+                    return process;
                 }
             };
             ExecutionDescriptor descriptor = new ExecutionDescriptor()
@@ -87,7 +89,7 @@ public final class GenerateGrailsAction implements ActionListener {
                     .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
                         @Override
                         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 1)));
+                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(process, handle, 100, 1)));
                         }
                     })
                     ;

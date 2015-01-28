@@ -2,12 +2,10 @@ package org.netbeans.cg;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.openide.awt.StatusDisplayer;
 
-/**
- *
- * @author Petr Hejl
- */
 public class ProgressLineProcessor implements LineProcessor {
+    private final Process process;
 
     private final ProgressHandle progress;
 
@@ -17,7 +15,8 @@ public class ProgressLineProcessor implements LineProcessor {
 
     private int value;
 
-    public ProgressLineProcessor(ProgressHandle progress, int max, int step) {
+    public ProgressLineProcessor(Process process, ProgressHandle progress, int max, int step) {
+        this.process = process;
         this.progress = progress;
         this.max = max;
         this.step = step;
@@ -27,6 +26,9 @@ public class ProgressLineProcessor implements LineProcessor {
         value += step;
         if (value > max) {
             value = max;
+            process.destroyForcibly();
+            progress.finish();
+            StatusDisplayer.getDefault().setStatusText("Completing the process...");
         }
         
         progress.progress(value);

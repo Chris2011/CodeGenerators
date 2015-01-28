@@ -47,6 +47,7 @@ public final class GenerateYeomanAction implements ActionListener {
     private static final String yo = "C:\\Users\\gwieleng\\AppData\\Roaming\\npm\\yo.cmd";
     private static final String yoProjectFolder = "C:\\test2";
     private static final String yoProjectCommand = "ko:app";
+    private Process process;
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -67,7 +68,7 @@ public final class GenerateYeomanAction implements ActionListener {
             Callable<Process> callable = new Callable<Process>() {
                 @Override
                 public Process call() throws Exception {
-                    Process process = new ExternalProcessBuilder(yo).
+                    process = new ExternalProcessBuilder(yo).
                             addArgument(yoProjectCommand).
                             workingDirectory(new File(yoProjectFolder)).call();
                     dialogProcessor.setWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -92,7 +93,7 @@ public final class GenerateYeomanAction implements ActionListener {
                     .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
                         @Override
                         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 1)));
+                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(process, handle, 100, 1)));
                         }
                     })
                     .errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
@@ -105,12 +106,7 @@ public final class GenerateYeomanAction implements ActionListener {
             ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
             Future<Integer> future = service.run();
             try {
-                Integer ret = future.get();
-                if (ret != 0) {
-                    String msg = "Error";
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-                }
+                future.get();
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
