@@ -77,25 +77,26 @@ public final class GenerateGrailsAction implements ActionListener {
                     return process;
                 }
             };
-             ExecutionDescriptor descriptor = new ExecutionDescriptor().
-                    frontWindow(true).postExecution(new Runnable() {
+            ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                    .frontWindow(true)
+                    .postExecution(new Runnable() {
                         @Override
                         public void run() {
                             StatusDisplayer.getDefault().setStatusText("Created: " + grailsProjectName);
                         }
+                    })
+                    .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                        @Override
+                        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 1)));
+                        }
+                    })
+                    .errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                        @Override
+                        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(dialogProcessor));
+                        }
                     });
-            descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-                @Override
-                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 1)));
-                }
-            });
-            descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-                @Override
-                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(dialogProcessor));
-                }
-            });
             ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
             Future<Integer> future = service.run();
             try {
@@ -116,10 +117,8 @@ public final class GenerateGrailsAction implements ActionListener {
         }
     }
 
-    public class Numbered implements LineConvertor {
-
+    private class Numbered implements LineConvertor {
         private int number;
-
         @Override
         public List<ConvertedLine> convert(String line) {
             List<ConvertedLine> result = Collections.singletonList(ConvertedLine.forText(number + ": " + line, null));
@@ -128,10 +127,8 @@ public final class GenerateGrailsAction implements ActionListener {
         }
     }
 
-    private static class DialogLineProcessor implements LineProcessor {
-
+    private class DialogLineProcessor implements LineProcessor {
         private Writer writer;
-
         @Override
         public void processLine(String line) {
             Writer answerWriter;
@@ -147,18 +144,15 @@ public final class GenerateGrailsAction implements ActionListener {
                 }
             }
         }
-
         public void setWriter(Writer writer) {
             synchronized (this) {
                 this.writer = writer;
             }
         }
-
         @Override
         public void close() {
             // noop
         }
-
         @Override
         public void reset() {
             // noop
