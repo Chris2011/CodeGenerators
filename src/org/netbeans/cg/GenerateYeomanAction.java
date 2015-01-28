@@ -34,14 +34,14 @@ import org.openide.util.NbBundle.Messages;
 
 @ActionID(
         category = "Tools",
-        id = "org.netbeans.cg.GenerateCordovaAction"
+        id = "org.netbeans.cg.GenerateYoAction"
 )
 @ActionRegistration(
-        displayName = "#CTL_GenerateCordovaAction",
+        displayName = "#CTL_GenerateYoAction",
         asynchronous = true
 )
 @ActionReference(path = "Menu/Generators", position = 10)
-@Messages("CTL_GenerateCordovaAction=Generate Yeoman App")
+@Messages("CTL_GenerateYoAction=Generate Yeoman App")
 public final class GenerateYeomanAction implements ActionListener {
 
     private static final String yo = "C:\\Users\\gwieleng\\AppData\\Roaming\\npm\\yo.cmd";
@@ -53,12 +53,12 @@ public final class GenerateYeomanAction implements ActionListener {
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
-                createCordovaApp();
+                createYoApp();
             }
         }, "Create Yeoman application...");
     }
 
-    private void createCordovaApp() {
+    private void createYoApp() {
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Processing...");
         handle.start(100);
         try {
