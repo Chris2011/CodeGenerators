@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -83,6 +84,12 @@ public final class GenerateGrailsAction implements ActionListener {
                         @Override
                         public void run() {
                             StatusDisplayer.getDefault().setStatusText("Created: " + grailsProjectName);
+                        }
+                    })
+                    .outConvertorFactory(new LineConvertorFactory() {
+                        @Override
+                        public LineConvertor newLineConvertor() {
+                            return new Numbered();
                         }
                     })
                     .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
