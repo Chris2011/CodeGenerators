@@ -63,19 +63,15 @@ public final class GenerateGrailsAction implements ActionListener {
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Processing...");
         handle.start(100);
         try {
-            final DialogLineProcessor dialogProcessor = new DialogLineProcessor();
             String displayName = grailsProjectCommand + " -- " + grailsProjectName;
             Callable<Process> callable = new Callable<Process>() {
                 @Override
                 public Process call() throws Exception {
-                    Process process
-                            = new ExternalProcessBuilder(grails).
+                    return new ExternalProcessBuilder(grails).
                             addArgument(grailsProjectCommand).
                             addArgument(grailsProjectName).
                             addArgument("--non-interactive").
                             workingDirectory(new File(grailsProjectFolder)).call();
-                    dialogProcessor.setWriter(new OutputStreamWriter(process.getOutputStream()));
-                    return process;
                 }
             };
             ExecutionDescriptor descriptor = new ExecutionDescriptor()
@@ -98,12 +94,7 @@ public final class GenerateGrailsAction implements ActionListener {
                             return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 1)));
                         }
                     })
-                    .errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-                        @Override
-                        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                            return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(dialogProcessor));
-                        }
-                    });
+                    ;
             ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
             Future<Integer> future = service.run();
             try {
@@ -131,38 +122,6 @@ public final class GenerateGrailsAction implements ActionListener {
             List<ConvertedLine> result = Collections.singletonList(ConvertedLine.forText(number + ": " + line, null));
             number++;
             return result;
-        }
-    }
-
-    private class DialogLineProcessor implements LineProcessor {
-        private Writer writer;
-        @Override
-        public void processLine(String line) {
-            Writer answerWriter;
-            synchronized (this) {
-                answerWriter = writer;
-            }
-            if (answerWriter != null) {
-                try {
-                    answerWriter.write("y\n"); // NOI18N
-                    answerWriter.flush();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        public void setWriter(Writer writer) {
-            synchronized (this) {
-                this.writer = writer;
-            }
-        }
-        @Override
-        public void close() {
-            // noop
-        }
-        @Override
-        public void reset() {
-            // noop
         }
     }
 
