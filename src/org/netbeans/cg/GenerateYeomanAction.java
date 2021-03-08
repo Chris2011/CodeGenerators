@@ -23,8 +23,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -44,19 +42,19 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_GenerateYoAction=Generate Yeoman App")
 public final class GenerateYeomanAction implements ActionListener {
 
-    private static final String yo = "C:\\Users\\gwieleng\\AppData\\Roaming\\npm\\yo.cmd";
+    private static final String yo = "C:\\Users\\Chrl\\AppData\\Roaming\\npm\\yo.cmd";
     private static final String yoProjectFolder = "C:\\test2";
-    private static final String yoProjectCommand = "ko:app";
+    private static final String yoProjectCommand = "assemble";
     private Process process;
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
-            @Override
-            public void run() {
+//        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+//            @Override
+//            public void run() {
                 createYoApp();
-            }
-        }, "Create Yeoman application...");
+//            }
+//        }, "Create Yeoman application...");
     }
 
     private void createYoApp() {
@@ -69,8 +67,8 @@ public final class GenerateYeomanAction implements ActionListener {
                 @Override
                 public Process call() throws Exception {
                     process = new ExternalProcessBuilder(yo).
-                            addArgument(yoProjectCommand).
-                            workingDirectory(new File(yoProjectFolder)).call();
+                            addArgument(yoProjectCommand)
+                            .workingDirectory(new File(yoProjectFolder)).call();
                     dialogProcessor.setWriter(new OutputStreamWriter(process.getOutputStream()));
                     return process;
                 }
@@ -127,7 +125,7 @@ public final class GenerateYeomanAction implements ActionListener {
             return result;
         }
     }
-    
+
     private static class DialogLineProcessor implements LineProcessor {
         private Writer writer;
         @Override
